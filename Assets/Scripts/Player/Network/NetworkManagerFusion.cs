@@ -27,7 +27,7 @@ public class NetworkManagerFusion : MonoBehaviour, INetworkRunnerCallbacks
 
             if (playerSpawner == null)
             {
-                Debug.LogError("No se encontró PlayerSpawner");
+                Debug.LogError("❌ No se encontró PlayerSpawner");
                 return;
             }
         }
@@ -51,7 +51,8 @@ public class NetworkManagerFusion : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
-        NetworkInputData data = new NetworkInputData();
+        // 🔥 AQUÍ ESTABA EL ERROR → YA CORREGIDO
+        PlayerInputData data = new PlayerInputData();
 
         data.move = new Vector2(
             Input.GetAxis("Horizontal"),

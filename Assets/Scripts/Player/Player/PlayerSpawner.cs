@@ -1,55 +1,56 @@
-﻿using Fusion;
-using UnityEngine;
+﻿using UnityEngine;
+using Fusion;
+using System.Collections.Generic;
 
 public class PlayerSpawner : MonoBehaviour
 {
-    public GameObject zombiePrefab;
-    public GameObject runnerPrefab;
-
+    public GameObject playerPrefab;
     public Transform[] spawnPoints;
+
+    private List<PlayerRole> players = new List<PlayerRole>();
 
     public void SpawnPlayer(NetworkRunner runner, PlayerRef player)
     {
-        int playerCount = 0;
+        Transform spawn = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
-        foreach (var p in runner.ActivePlayers)
-        {
-            playerCount++;
-        }
-
-        bool isZombie = playerCount == 1;
-
-        GameObject prefabToSpawn = isZombie ? zombiePrefab : runnerPrefab;
-
-        if (prefabToSpawn == null)
-        {
-            Debug.LogError("❌ Prefab no asignado");
-            return;
-        }
-
-        if (spawnPoints == null || spawnPoints.Length == 0)
-        {
-            Debug.LogError("❌ No hay spawn points");
-            return;
-        }
-
-        Transform spawnPoint = spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Length)];
-
-        NetworkObject netObj = prefabToSpawn.GetComponent<NetworkObject>();
-
-        if (netObj == null)
-        {
-            Debug.LogError("❌ El prefab no tiene NetworkObject");
-            return;
-        }
-
-        runner.Spawn(
-            netObj,
-            spawnPoint.position,
-            spawnPoint.rotation,
+        NetworkObject obj = runner.Spawn(
+            playerPrefab,
+            spawn.position,
+            spawn.rotation,
             player
         );
 
-        Debug.Log("✅ Jugador spawneado correctamente");
+        PlayerRole role = obj.GetComponent<PlayerRole>();
+
+        players.Add(role);
+
+        Debug.Log("Jugador añadido a lista");
+
+        if (runner.IsServer)
+        {
+            AssignRoles();
+        }
+    }
+
+    void AssignRoles()
+    {
+        if (players.Count == 0) return;
+
+        int hunterCount = players.Count >= 4 ? 2 : 1;
+
+        // Reset todos
+        foreach (var p in players)
+        {
+            p.SetRole(Role.Player);
+        }
+
+        // Elegir hunters
+        for (int i = 0; i < hunterCount; i++)
+        {
+            int index = Random.Range(0, players.Count);
+            players[index].SetRole(Role.Hunter);
+        }
+
+        Debug.Log("Roles asignados correctamente");
     }
 }
