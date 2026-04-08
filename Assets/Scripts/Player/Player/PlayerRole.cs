@@ -12,7 +12,6 @@ public class PlayerRole : NetworkBehaviour
     [Networked] public Role role { get; set; }
 
     public GameObject smoke;
-    public CharacterController controller;
 
     public float runnerSpeed = 6f;
     public float hunterSpeed = 4f;
@@ -43,5 +42,15 @@ public class PlayerRole : NetworkBehaviour
     public bool IsHunter()
     {
         return role == Role.Hunter;
+    }
+
+    public float GetSpeed()
+    {
+        return IsHunter() ? hunterSpeed : runnerSpeed;
+    }
+
+    public float GetJumpForce()
+    {
+        return IsHunter() ? hunterJumpBoost * 5f : 5f;
     }
 }

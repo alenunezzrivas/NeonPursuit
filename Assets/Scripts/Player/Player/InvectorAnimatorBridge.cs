@@ -2,11 +2,11 @@ using UnityEngine;
 using Fusion;
 
 [RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : NetworkBehaviour
+public class InvectorAnimatorBridge : NetworkBehaviour
 {
     private CharacterController controller;
-    private PlayerRole role;
     private Animator animator;
+    private PlayerRole role;
 
     private float yVelocity;
     public float gravity = -20f;
@@ -14,49 +14,35 @@ public class PlayerMovement : NetworkBehaviour
     public override void Spawned()
     {
         controller = GetComponent<CharacterController>();
-        role = GetComponent<PlayerRole>();
         animator = GetComponentInChildren<Animator>();
+        role = GetComponent<PlayerRole>();
     }
 
     public override void FixedUpdateNetwork()
     {
         if (!Object.HasInputAuthority) return;
 
-        if (GetInput(out PlayerInputData data))
-        {
-            Move(data);
-        }
-    }
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
-    void Move(PlayerInputData data)
-    {
-        float speed = role.IsHunter() ? role.hunterSpeed : role.runnerSpeed;
+        Vector3 move = transform.forward * v + transform.right * h;
 
-        Vector3 move = new Vector3(data.move.x, 0, data.move.y);
-
-        if (move.magnitude > 1f)
-            move.Normalize();
-
-        Vector3 worldMove = transform.TransformDirection(move);
+        float speed = role.GetSpeed();
 
         // GRAVEDAD
         if (controller.isGrounded && yVelocity < 0)
             yVelocity = -2f;
 
-        if (data.jump && controller.isGrounded)
+        // SALTO
+        if (Input.GetKey(KeyCode.Space) && controller.isGrounded)
         {
-            float jumpForce = role.IsHunter()
-                ? role.hunterJumpBoost * 5f
-                : 5f;
-
-            yVelocity = Mathf.Sqrt(jumpForce * -2f * gravity);
-
+            yVelocity = Mathf.Sqrt(role.GetJumpForce() * -2f * gravity);
             animator.SetTrigger("Jump");
         }
 
         yVelocity += gravity * Runner.DeltaTime;
 
-        Vector3 velocity = worldMove * speed;
+        Vector3 velocity = move * speed;
         velocity.y = yVelocity;
 
         controller.Move(velocity * Runner.DeltaTime);
@@ -66,16 +52,16 @@ public class PlayerMovement : NetworkBehaviour
         {
             transform.forward = Vector3.Lerp(
                 transform.forward,
-                worldMove,
+                move,
                 10f * Runner.DeltaTime
             );
         }
 
         // ANIMACIONES
-        float animSpeed = move.magnitude;
+        float animSpeed = new Vector2(h, v).magnitude;
 
-        animator.SetFloat("InputHorizontal", data.move.x);
-        animator.SetFloat("InputVertical", data.move.y);
+        animator.SetFloat("InputHorizontal", h);
+        animator.SetFloat("InputVertical", v);
         animator.SetFloat("InputMagnitude", animSpeed);
         animator.SetBool("IsGrounded", controller.isGrounded);
     }
