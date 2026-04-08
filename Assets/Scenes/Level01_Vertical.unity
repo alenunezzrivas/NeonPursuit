@@ -16783,8 +16783,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 067573d61b0b7734aa0f557a25b2fc73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawner
-  zombiePrefab: {fileID: 6254101755185597867, guid: 7b74a75497b15324a89083abce7701f7, type: 3}
-  runnerPrefab: {fileID: 6780293736928941178, guid: 45e8bd87d25678042820d291c46a7fc8, type: 3}
+  playerPrefab: {fileID: 3928022254661042184, guid: 3660d373f495eb040ae36a883a845829, type: 3}
   spawnPoints:
   - {fileID: 2077178110}
   - {fileID: 1754958512}
