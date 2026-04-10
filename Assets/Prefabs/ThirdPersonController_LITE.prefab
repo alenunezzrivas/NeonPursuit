@@ -1769,9 +1769,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRole
   _role: 0
   smoke: {fileID: 4352318787917940295}
-  runnerSpeed: 6
+  runnerSpeed: 5
   hunterSpeed: 4
-  hunterJumpBoost: 1.5
+  baseJumpForce: 2.5
+  hunterJumpMultiplier: 2
 --- !u!114 &6864697961213055611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1822,6 +1823,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InvectorAnimatorBridge
   gravity: -20
+  groundedForce: -5
 --- !u!1 &3976192028595413275
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
-using UnityEngine;
 using Fusion;
+using System;
+using UnityEngine;
 
 public enum Role
 {
@@ -15,7 +16,9 @@ public class PlayerRole : NetworkBehaviour
 
     public float runnerSpeed = 6f;
     public float hunterSpeed = 4f;
-    public float hunterJumpBoost = 1.5f;
+
+    public float baseJumpForce = 2.5f;
+    public float hunterJumpMultiplier = 1.3f;
 
     public override void Spawned()
     {
@@ -51,6 +54,8 @@ public class PlayerRole : NetworkBehaviour
 
     public float GetJumpForce()
     {
-        return IsHunter() ? hunterJumpBoost * 5f : 5f;
+        return IsHunter()
+            ? baseJumpForce * hunterJumpMultiplier
+            : baseJumpForce;
     }
 }

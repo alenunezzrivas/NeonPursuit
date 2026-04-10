@@ -1,81 +1,91 @@
+using Fusion;
 using UnityEngine;
 
-public class BridgeConsole : MonoBehaviour
+public class BridgeConsole : NetworkBehaviour
 {
     public BridgeMovement bridge;
-    public Transform player;
     public GameObject messageUI;
 
     public float activationDistance = 2f;
 
+    private Transform player;
     private AudioSource audioSource;
 
-    // Referencia global a la consola activa
     private static BridgeConsole currentConsole;
 
-    void Start()
+    public override void Spawned()
     {
-        if (messageUI != null)
-        {
-            messageUI.SetActive(false);
-        }
-
         audioSource = GetComponent<AudioSource>();
+
+        if (messageUI != null)
+            messageUI.SetActive(false);
     }
 
-    void Update()
+    public override void FixedUpdateNetwork()
     {
+        // 👇 SOLO el jugador local ejecuta esto
+        if (!Object.HasInputAuthority) return;
+
+        // 🔍 Buscar player local
+        if (player == null)
+        {
+            var players = FindObjectsOfType<PlayerRole>();
+
+            foreach (var p in players)
+            {
+                if (p.Object != null && p.Object.HasInputAuthority)
+                {
+                    player = p.transform;
+                    break;
+                }
+            }
+        }
+
         if (player == null) return;
 
         float distance = Vector3.Distance(transform.position, player.position);
 
-        // Si está dentro del rango
-        if (distance < activationDistance)
+        // 🎯 Seleccionar consola más cercana
+        if (distance <= activationDistance)
         {
-            // Esta consola pasa a ser la activa
-            if (currentConsole == null || distance < Vector3.Distance(currentConsole.transform.position, player.position))
+            if (currentConsole == null ||
+                distance < Vector3.Distance(currentConsole.transform.position, player.position))
             {
                 currentConsole = this;
             }
         }
 
-        // SOLO la consola activa controla el UI
-        if (currentConsole == this)
+        // 🎮 UI + INPUT
+        if (currentConsole == this && distance <= activationDistance)
         {
-            if (distance < activationDistance)
-            {
-                if (messageUI != null)
-                    messageUI.SetActive(true);
+            if (messageUI != null && !messageUI.activeSelf)
+                messageUI.SetActive(true);
 
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    ToggleBridge();
-                }
-            }
-            else
+            if (Input.GetKeyDown(KeyCode.E))
             {
-                if (messageUI != null)
-                    messageUI.SetActive(false);
-
-                currentConsole = null;
+                RPC_RequestToggle();
             }
         }
         else
         {
-            if (messageUI != null)
+            if (messageUI != null && messageUI.activeSelf)
                 messageUI.SetActive(false);
+
+            if (currentConsole == this)
+                currentConsole = null;
         }
     }
 
-    void ToggleBridge()
+    // 🔥 CLIENT → SERVER
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    void RPC_RequestToggle()
     {
-        if (bridge == null) return;
-
-        bridge.ToggleBridge();
-
-        if (audioSource != null)
+        if (bridge != null)
         {
-            audioSource.Play();
+            bridge.ToggleBridge();
+
+            if (audioSource != null)
+                audioSource.Play();
         }
     }
 }

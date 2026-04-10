@@ -1,5 +1,6 @@
-using UnityEngine;
 using Fusion;
+using System;
+using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 public class InvectorAnimatorBridge : NetworkBehaviour
@@ -9,7 +10,9 @@ public class InvectorAnimatorBridge : NetworkBehaviour
     private PlayerRole role;
 
     private float yVelocity;
-    public float gravity = -20f;
+
+    public float gravity = -30f;
+    public float groundedForce = -5f;
 
     public override void Spawned()
     {
@@ -29,17 +32,20 @@ public class InvectorAnimatorBridge : NetworkBehaviour
 
         float speed = role.GetSpeed();
 
-        // GRAVEDAD
+        // SUELO
         if (controller.isGrounded && yVelocity < 0)
-            yVelocity = -2f;
+            yVelocity = groundedForce;
 
-        // SALTO
+        // SALTO AJUSTADO
         if (Input.GetKey(KeyCode.Space) && controller.isGrounded)
         {
-            yVelocity = Mathf.Sqrt(role.GetJumpForce() * -2f * gravity);
+            float jumpForce = role.GetJumpForce();
+            yVelocity = Mathf.Sqrt(jumpForce * -2f * gravity);
+
             animator.SetTrigger("Jump");
         }
 
+        // GRAVEDAD
         yVelocity += gravity * Runner.DeltaTime;
 
         Vector3 velocity = move * speed;

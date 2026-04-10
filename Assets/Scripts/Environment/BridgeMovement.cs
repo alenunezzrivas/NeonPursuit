@@ -1,15 +1,17 @@
+using Fusion;
+using System;
 using UnityEngine;
 
-public class BridgeMovement : MonoBehaviour
+public class BridgeMovement : NetworkBehaviour
 {
     public Transform closedPoint;
     public Transform openPoint;
 
     public float speed = 2f;
 
-    private bool opening = false;
+    [Networked] private bool opening { get; set; }
 
-    void Update()
+    public override void FixedUpdateNetwork()
     {
         Transform target = opening ? openPoint : closedPoint;
 
@@ -18,13 +20,16 @@ public class BridgeMovement : MonoBehaviour
             transform.position = Vector3.MoveTowards(
                 transform.position,
                 target.position,
-                speed * Time.deltaTime
+                speed * Runner.DeltaTime
             );
         }
     }
 
     public void ToggleBridge()
     {
-        opening = !opening;
+        if (Object.HasStateAuthority)
+        {
+            opening = !opening;
+        }
     }
 }
