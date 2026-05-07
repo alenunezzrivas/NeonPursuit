@@ -1631,6 +1631,7 @@ GameObject:
   - component: {fileID: 6864697961213055611}
   - component: {fileID: 2798200194290465538}
   - component: {fileID: 5096610422504898260}
+  - component: {fileID: 1015896140353094174}
   m_Layer: 0
   m_Name: ThirdPersonController_LITE
   m_TagString: Player
@@ -1724,6 +1725,7 @@ MonoBehaviour:
   - {fileID: 3200394250487193478}
   - {fileID: 6864697961213055611}
   - {fileID: 5096610422504898260}
+  - {fileID: 1015896140353094174}
   - {fileID: 2165551528320374288}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &257482330354798524
@@ -1824,6 +1826,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InvectorAnimatorBridge
   gravity: -20
   groundedForce: -5
+--- !u!114 &1015896140353094174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3928022254661042184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fa30968dc9dd7941a7f14e674068e89, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalPlayerSetup
+  playerCamera: {fileID: 2165551528320374294}
+  audioListener: {fileID: 2165551528320374289}
 --- !u!1 &3976192028595413275
 GameObject:
   m_ObjectHideFlags: 0
@@ -3525,9 +3541,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a1bfe72fbc87d04e885296b53e91c66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!81 &2165551528320374289 stripped
+AudioListener:
+  m_CorrespondingSourceObject: {fileID: 2700874171910072506, guid: 330efb0e9eed825408809c121441b8a5, type: 3}
+  m_PrefabInstance: {fileID: 4284888192830488235}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2165551528320374290 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2700874171910072505, guid: 330efb0e9eed825408809c121441b8a5, type: 3}
+  m_PrefabInstance: {fileID: 4284888192830488235}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &2165551528320374294 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 2700874171910072509, guid: 330efb0e9eed825408809c121441b8a5, type: 3}
   m_PrefabInstance: {fileID: 4284888192830488235}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4351892729220418471
