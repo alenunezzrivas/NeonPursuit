@@ -1,5 +1,4 @@
 using Fusion;
-using System;
 using UnityEngine;
 
 public enum Role
@@ -11,6 +10,8 @@ public enum Role
 public class PlayerRole : NetworkBehaviour
 {
     [Networked] public Role role { get; set; }
+    [Networked] public NetworkBool ready { get; set; }
+    [Networked] public NetworkBool roleInitialized { get; set; }
 
     public GameObject smoke;
 
@@ -18,19 +19,36 @@ public class PlayerRole : NetworkBehaviour
     public float hunterSpeed = 4f;
 
     public float baseJumpForce = 2.5f;
-    public float hunterJumpMultiplier = 1.3f;
+    public float hunterJumpMultiplier = 2f;
+
+    private Role previousRole;
+    private bool hasAnnounced;
 
     public override void Spawned()
     {
-        ApplyRole();
+        ApplyRoleVisuals();
     }
 
     public override void Render()
     {
-        ApplyRole();
+        if (!Object.HasInputAuthority) return;
+
+        ApplyRoleVisuals();
+
+        if (hasAnnounced) return;
+        if (!roleInitialized) return;
+        if (previousRole == role) return;
+
+        previousRole = role;
+        hasAnnounced = true;
+
+        if (role == Role.Hunter)
+            RoleAnnouncement.Show("HUNTER", "Catch your enemy");
+        else
+            RoleAnnouncement.Show("RUNNER", "Escape the hunter");
     }
 
-    void ApplyRole()
+    void ApplyRoleVisuals()
     {
         if (smoke != null)
             smoke.SetActive(role == Role.Hunter);
@@ -39,7 +57,10 @@ public class PlayerRole : NetworkBehaviour
     public void SetRole(Role newRole)
     {
         if (Object.HasStateAuthority)
+        {
             role = newRole;
+            roleInitialized = true;
+        }
     }
 
     public bool IsHunter()

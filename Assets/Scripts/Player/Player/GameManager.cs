@@ -9,6 +9,7 @@ public class GameManager : NetworkBehaviour
     [Networked] private bool gameStarted { get; set; }
     [Networked] private bool gameEnded { get; set; }
     [Networked] private float countdown { get; set; }
+    [Networked] private NetworkBool rolesAssigned { get; set; }
 
     public float matchTime = 120f;
     public float startCountdown = 3f;
@@ -19,7 +20,11 @@ public class GameManager : NetworkBehaviour
     public TMP_Text timerText;
     public TMP_Text statusText;
 
+
+
     private static GameManager instance;
+    private int logTicker;
+    private PlayerSpawner spawner;
 
     void Awake()
     {
@@ -40,6 +45,7 @@ public class GameManager : NetworkBehaviour
         countdown = startCountdown;
         gameStarted = false;
         gameEnded = false;
+        rolesAssigned = false;
     }
 
     public override void FixedUpdateNetwork()
@@ -49,7 +55,13 @@ public class GameManager : NetworkBehaviour
 
         int playerCount = GetPlayerCount();
 
-        // ESPERANDO JUGADORES
+        if (Runner != null && Runner.IsRunning && (logTicker++ % 120) == 0)
+        {
+            string pids = "";
+            foreach (var p in Runner.ActivePlayers) pids += p.PlayerId + ",";
+            Debug.Log($"[GameManager] Players: {playerCount} [{pids}] started={gameStarted} roles={rolesAssigned}");
+        }
+
         if (!gameStarted)
         {
             if (playerCount < 2)
@@ -58,7 +70,25 @@ public class GameManager : NetworkBehaviour
                 return;
             }
 
-            // COUNTDOWN
+            if (!rolesAssigned)
+            {
+                if (AreAllPlayersReady())
+                {
+                    if (spawner == null)
+                        spawner = FindObjectOfType<PlayerSpawner>();
+
+                    spawner?.AssignRolesNow();
+                    rolesAssigned = true;
+                    countdown = startCountdown;
+                }
+                else
+                {
+                    int readyCount = CountReadyPlayers();
+                    Rpc_UpdateStatus($"Presiona ESPACIO para listo ({readyCount}/{playerCount})");
+                }
+                return;
+            }
+
             countdown -= Runner.DeltaTime;
             Rpc_UpdateStatus("Empieza en: " + Mathf.Ceil(countdown));
 
@@ -71,7 +101,6 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        // PARTIDA
         timer -= Runner.DeltaTime;
         Rpc_UpdateTimer(Mathf.Ceil(timer).ToString());
 
@@ -81,6 +110,29 @@ public class GameManager : NetworkBehaviour
         {
             EndGame("Ganan los Runners");
         }
+    }
+
+    bool AreAllPlayersReady()
+    {
+        var roles = FindObjectsOfType<PlayerRole>();
+        int activeCount = GetPlayerCount();
+        if (roles.Length < activeCount || activeCount < 2) return false;
+        foreach (var r in roles)
+        {
+            if (!r.ready) return false;
+        }
+        return true;
+    }
+
+    int CountReadyPlayers()
+    {
+        int count = 0;
+        var roles = FindObjectsOfType<PlayerRole>();
+        foreach (var r in roles)
+        {
+            if (r.ready) count++;
+        }
+        return count;
     }
 
     int GetPlayerCount()

@@ -4,5 +4,7 @@ using UnityEngine;
 public struct PlayerInputData : INetworkInput
 {
     public Vector2 move;
-    public bool jump;
+    public Vector2 look;
+    public NetworkBool jump;
+    public NetworkBool ready;
 }

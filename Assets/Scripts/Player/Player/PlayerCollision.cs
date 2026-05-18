@@ -10,18 +10,16 @@ public class PlayerCollision : NetworkBehaviour
         role = GetComponent<PlayerRole>();
     }
 
-    private void OnTriggerEnter(Collider other)
+    void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        PlayerRole otherRole = other.GetComponent<PlayerRole>();
+        if (!Object.HasStateAuthority) return;
+        if (role == null) return;
+        if (!role.IsHunter()) return;
 
+        PlayerRole otherRole = hit.gameObject.GetComponent<PlayerRole>();
         if (otherRole == null) return;
+        if (otherRole.IsHunter()) return;
 
-        if (role.IsHunter() && !otherRole.IsHunter())
-        {
-            if (Object.HasStateAuthority)
-            {
-                Runner.Despawn(otherRole.Object);
-            }
-        }
+        Runner.Despawn(otherRole.Object);
     }
 }
